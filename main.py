@@ -2,6 +2,7 @@ import arcade
 import random
 import copy
 
+
 class CellularAutomation(arcade.Window):
     def __init__(self, width, height, title, cs):
         # Setup window
@@ -18,7 +19,8 @@ class CellularAutomation(arcade.Window):
         for y in range(self.HEIGHT):
             temp = []
             for x in range(self.WIDTH):
-                temp.append((random.choice([1]*30+[0]), 0))  # (type, age) type: {0: sand, 1: water, 2: grass} / age: int
+                temp.append(
+                    (random.choice([1] * 30 + [0]), 0))  # (type, age) type: {0: sand, 1: water, 2: grass} / age: int
             self.map.append(temp)
 
         # Setup rendering tools
@@ -42,14 +44,15 @@ class CellularAutomation(arcade.Window):
                     if tile == 2 and self.map[y - 1][x][0] == 0:
                         sprite = arcade.SpriteSolidColor(self.cell_size, self.cell_size,
                                                          position_x + round(self.cell_size),
-                                                         position_y - round(self.cell_size), color=(0, 126, 22, 255))
+                                                         position_y - round(self.cell_size), color=(217, 186, 84, 255))
                         self.map_list.append(sprite)
                         continue
                 except:
                     pass
                 if tile != 0:
                     continue
-                sprite = arcade.SpriteSolidColor(self.cell_size, self.cell_size, position_x + round(self.cell_size), position_y - round(self.cell_size), color=(217, 186, 84, 255))
+                sprite = arcade.SpriteSolidColor(self.cell_size, self.cell_size, position_x + round(self.cell_size),
+                                                 position_y - round(self.cell_size), color=(217, 186, 84, 255))
                 self.map_list.append(sprite)
 
         for y in range(self.HEIGHT):
@@ -71,46 +74,48 @@ class CellularAutomation(arcade.Window):
                 self.map_list.append(sprite)
 
     def calculate_next(self, delta_time):
-            # Create temporary variable for the next map
-            temp_map = copy.deepcopy(self.map)
+        # Create temporary variable for the next map
+        temp_map = copy.deepcopy(self.map)
 
-            # Track iterations
-            self.iterations += 1
-            if self.iterations >= self.max_iterations:
-                self.clean()
-                arcade.unschedule(self.calculate_next)
+        # Track iterations
+        self.iterations += 1
+        if self.iterations >= self.max_iterations:
+            self.clean()
+            arcade.unschedule(self.calculate_next)
 
-            # Calculate
-            for y in range(self.HEIGHT):
-                for x in range(self.WIDTH):
-                    surrounding = self.check_surrounding(x, y)
-                    if surrounding:
-                        if self.map[y][x][0] == 0:
-                            temp_map[y][x] = self.calculate_sand(self.map[y][x], surrounding)
-                        elif self.map[y][x][0] == 1:
-                            temp_map[y][x] = self.calculate_water(self.map[y][x], surrounding)
-                        else:
-                            temp_map[y][x] = self.calculate_grass(self.map[y][x], surrounding, 10)
+        # Calculate
+        for y in range(self.HEIGHT):
+            for x in range(self.WIDTH):
+                surrounding = self.check_surrounding(x, y)
+                if surrounding:
+                    if self.map[y][x][0] == 0:
+                        temp_map[y][x] = self.calculate_sand(self.map[y][x], surrounding)
+                    elif self.map[y][x][0] == 1:
+                        temp_map[y][x] = self.calculate_water(self.map[y][x], surrounding)
                     else:
-                        pass
+                        temp_map[y][x] = self.calculate_grass(self.map[y][x])
+                else:
+                    pass
 
-            # Set the actual map to the new map
-            self.map = copy.deepcopy(temp_map)
+        # Set the actual map to the new map
+        self.map = copy.deepcopy(temp_map)
 
-    def calculate_sand(self, current_cell, surrounding):
+    @staticmethod
+    def calculate_sand(current_cell, surrounding):
         if surrounding['1'] == 0:
-            return (2, 0)
-        return (0, current_cell[1] + 1)
+            return 2, 0
+        return 0, current_cell[1] + 1
 
-    def calculate_water(self, current_cell, surrounding):
+    @staticmethod
+    def calculate_water(current_cell, surrounding):
         if surrounding['0'] >= 3:
-            return (0, 0)
+            return 0, 0
 
-        return (1, current_cell[1] + 1)
+        return 1, current_cell[1] + 1
 
-    def calculate_grass(self, current_cell, surrounding, death_age):
-        return (2, current_cell[1] + 1)
-
+    @staticmethod
+    def calculate_grass(current_cell):
+        return 2, current_cell[1] + 1
 
     def check_surrounding(self, x, y):
         temp_list = []
