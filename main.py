@@ -6,6 +6,7 @@ class CellularAutomation(arcade.Window):
     def __init__(self, width, height, title, cs):
         # Setup window
         super().__init__(width, height, title)
+        arcade.set_background_color((8, 122, 194, 255))
 
         # Setup basic variables
         self.cell_size = cs
@@ -17,7 +18,7 @@ class CellularAutomation(arcade.Window):
         for y in range(self.HEIGHT):
             temp = []
             for x in range(self.WIDTH):
-                temp.append((random.choice([1]*25+[0]), 0))  # (type, age) type: {0: sand, 1: water, 2: grass} / age: int
+                temp.append((random.choice([1]*30+[0]), 0))  # (type, age) type: {0: sand, 1: water, 2: grass} / age: int
             self.map.append(temp)
 
         # Setup rendering tools
@@ -35,15 +36,37 @@ class CellularAutomation(arcade.Window):
         for y in range(self.HEIGHT):
             for x in range(self.WIDTH):
                 tile = self.map[y][x][0]
-                position_x = self.cell_size // 2 + x * self.cell_size
-                position_y = self.cell_size // 2 + y * self.cell_size
+                position_x = self.cell_size // 2 + (x + 1) * self.cell_size
+                position_y = self.cell_size // 2 + (y + 1) * self.cell_size
+                try:
+                    if tile == 2 and self.map[y - 1][x][0] == 0:
+                        sprite = arcade.SpriteSolidColor(self.cell_size, self.cell_size,
+                                                         position_x + round(self.cell_size),
+                                                         position_y - round(self.cell_size), color=(0, 126, 22, 255))
+                        self.map_list.append(sprite)
+                        continue
+                except:
+                    pass
+                if tile != 0:
+                    continue
+                sprite = arcade.SpriteSolidColor(self.cell_size, self.cell_size, position_x + round(self.cell_size), position_y - round(self.cell_size), color=(217, 186, 84, 255))
+                self.map_list.append(sprite)
+
+        for y in range(self.HEIGHT):
+            for x in range(self.WIDTH):
+                tile = self.map[y][x][0]
+                age = self.map[y][x][1]
+                differ = age * 2
+                position_x = self.cell_size // 2 + (x + 1) * self.cell_size
+                position_y = self.cell_size // 2 + (y + 1) * self.cell_size
                 color = (0, 0, 0, 0)
                 if tile == 0:
                     color = (237, 206, 104)
                 elif tile == 1:
-                    color = (8, 122, 194)
+                    continue
                 elif tile == 2:
-                    color = (23, 99, 20)
+                    r, g, b = 28, 156, 62
+                    color = (max(r - min(differ, r), 14), max(g - min(differ, g), 135), max(b - min(differ, b), 40))
                 sprite = arcade.SpriteSolidColor(self.cell_size, self.cell_size, position_x, position_y, color=color)
                 self.map_list.append(sprite)
 
@@ -77,41 +100,15 @@ class CellularAutomation(arcade.Window):
     def calculate_sand(self, current_cell, surrounding):
         if surrounding['1'] == 0:
             return (2, 0)
-        #
-        # if 3 <= surrounding['1'] < 4 and surrounding['2'] >= 2:
-        #     if random.randint(0, round((surrounding['1'] + surrounding['2'])/2)):
-        #         return (2, 0)
-        #
-        # if surrounding['0'] >= 7:
-        #     num = random.randint(0, 12 - surrounding['0'])
-        #     if num == 0:
-        #         return (1, 0)
-        #     elif num == 1:
-        #         return (2, 0)
-        #
         return (0, current_cell[1] + 1)
 
     def calculate_water(self, current_cell, surrounding):
         if surrounding['0'] >= 3:
             return (0, 0)
-        # if surrounding['0'] == 8:
-        #     return (0, 0)
-        #
-        # if surrounding['1'] > 6:
-        #     if random.randint(0, 8) == 0:
-        #         return (2, 0)
-        #
-        # if surrounding['2'] >= 4:
-        #     if random.randint(0, 1) == 0:
-        #         return (2, 0)
-        #
+
         return (1, current_cell[1] + 1)
 
     def calculate_grass(self, current_cell, surrounding, death_age):
-        # if current_cell[1] > death_age:
-        #     return (0, 0)
-        # if surrounding['1'] > 6:
-        #     return (2, current_cell[1] + 1)
         return (2, current_cell[1] + 1)
 
 
